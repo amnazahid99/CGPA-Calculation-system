@@ -1,5 +1,5 @@
-# CGPA-Calculation-system
-This is the code for CGPA calculation in Lahore College for Women University in Python.
+ CGPA-Calculation-system
+This is the code for CGPA calculation in Lahore College for Women University in Python. It calculates the CGPA of 2 students at a time.
 Description: 
 1. Object-Oriented Approach:
     The code employs an object-oriented approach with a `Student` class to encapsulate data and functionality related to each student, such as marks, attendance, and GPA calculations. This allows for cleaner organization and management of student data.
