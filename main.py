@@ -1,91 +1,110 @@
 class Student:
-  def __init__(self, num_subjects):
-      self.marks = []
-      self.attendance = []
-      self.num_subjects = num_subjects
-      self.total_marks = 0
+    def __init__(self, student_id, subjects, semesters):
+        self.student_id = student_id
+        self.subjects = subjects
+        self.semesters = semesters
+        self.marks = []
+        self.attendance = []
+        self.gpa = []
+        self.cgpa = []
 
-  def add_marks(self, marks):
-      self.marks.append(marks)
-      self.total_marks += marks
+    def input_marks(self):
+        for i in range(self.subjects):
+            mark = int(input(f"Enter marks of subject {i + 1}: "))
+            self.marks.append(mark)
 
-  def add_attendance(self, att):
-      self.attendance.append(att)
+    def input_attendance(self):
+        for i in range(self.subjects):
+            att = float(input(f"Enter attendance of subject {i + 1}: "))
+            self.attendance.append(att)
 
-  def calculate_gpa(self, total):
-      total_attendance = sum(self.attendance)
-      total_percentage = (self.total_marks / (self.num_subjects * total)) * 100
-      gpa = 0.0
-      if total_percentage >= 85:
-          gpa = 4.0
-      elif total_percentage >= 80:
-          gpa = 3.7
-      elif total_percentage >= 75:
-          gpa = 3.3
-      elif total_percentage >= 70:
-          gpa = 3.0
-      elif total_percentage >= 65:
-          gpa = 2.7
-      elif total_percentage >= 60:
-          gpa = 2.3
-      elif total_percentage >= 55:
-          gpa = 2.0
-      elif total_percentage >= 51:
-          gpa = 1.7
-      elif total_percentage == 50:
-          gpa = 1.0
-      return gpa * total_attendance, total_percentage
+    def calculate_gpa(self, total):
+        gpa_sum = 0.0
+        attendance_sum = sum(self.attendance)
+
+        print("\nReport Card")
+        print("-" * 70)
+        print("| Student | Subject | Marks | Total | Percentage | Grade | GPA | Result |")
+        print("-" * 70)
+
+        for i in range(self.subjects):
+            percentage = (self.marks[i] * 100.0) / total
+            grade, gpa_val = self.get_grade_gpa(percentage)
+            self.gpa.append(gpa_val * self.attendance[i])
+            gpa_sum += self.gpa[i]
+            result = "pass" if grade != "F" else "fail"
+            print(f"|   {self.student_id + 1:6} |   {i + 1:6} | {self.marks[i]:5} | {total:5} |"
+                  f" {percentage:10.1f}% | {grade:5} | {gpa_val:3.1f} | {result:5} |")
+
+        print("-" * 70)
+        overall_gpa = gpa_sum / attendance_sum
+        print(f"GPA is {overall_gpa:.2f}\n")
+        return overall_gpa
+
+    def input_previous_gpa(self):
+        for j in range(self.semesters):
+            semester_gpa = float(input(f"Enter GPA of semester {j + 1} for Student {self.student_id + 1}: "))
+            self.cgpa.append(semester_gpa)
+
+    def calculate_cgpa(self, current_gpa):
+        cgpa_sum = current_gpa + sum(self.cgpa)
+        overall_cgpa = min(cgpa_sum / (self.semesters + 1), 4.0)
+        print(f"CGPA is {overall_cgpa:.2f}\n")
+        return overall_cgpa
+
+    @staticmethod
+    def get_grade_gpa(percentage):
+        if percentage >= 85:
+            return "A+", 4.0
+        elif percentage >= 80:
+            return "A", 3.7
+        elif percentage >= 75:
+            return "B+", 3.3
+        elif percentage >= 70:
+            return "B", 3.0
+        elif percentage >= 65:
+            return "B-", 2.7
+        elif percentage >= 60:
+            return "C+", 2.3
+        elif percentage >= 55:
+            return "C", 2.0
+        elif percentage >= 51:
+            return "C-", 1.7
+        elif percentage == 50:
+            return "D", 1.0
+        else:
+            return "F", 0.0
+
 
 def main():
-  n = int(input("Enter number of Students: "))
-  s = int(input("Enter number of Subjects: "))
-  total = int(input("Enter total marks of subject: "))
-  a1 = int(input("Enter previous number of semesters: "))
+    n = int(input("Enter number of Students: "))
+    s = int(input("Enter number of Subjects: "))
+    total = int(input("Enter total marks of subject: "))
+    a1 = int(input("Enter previous number of semesters: "))
 
-  students = []
+    students = [Student(i, s, a1) for i in range(n)]
+    
+    for student in students:
+        print(f"\n--- Enter marks of Student {student.student_id + 1} ---")
+        student.input_marks()
+        student.input_attendance()
 
-  for _ in range(n):
-      student = Student(s)
-      students.append(student)
+    pass_count = 0
+    fail_count = 0
 
-  for i, student in enumerate(students, start=1):
-      print(f"---Enter marks of Student {i}---")
-      for j in range(s):
-          marks = int(input(f"Enter marks of subject {j + 1}: "))
-          student.add_marks(marks)
+    for student in students:
+        current_gpa = student.calculate_gpa(total)
+        student.input_previous_gpa()
+        current_cgpa = student.calculate_cgpa(current_gpa)
+        if current_gpa < 1.0:
+            print("Fail")
+            fail_count += 1
+        else:
+            print("Pass")
+            pass_count += 1
 
-  print("-------------------------------------")
-  print("Enter attendance of each subject")
-
-  for i in range(s):
-      att = int(input(f"Enter attendance of subject {i + 1}: "))
-      for student in students:
-          student.add_attendance(att)
-
-  print("------------------------------------------")
-  print("Calculating GPA and CGPA")
-
-  pass_count = 0
-  fail_count = 0
-  total_cgpa = 0.0
-
-  for i, student in enumerate(students, start=1):
-      total_gpa, percentage = student.calculate_gpa(total)
-      cgpa = (total_gpa + sum(float(input(f"Enter GPA of semester {j + 1} for Student {i}: ")) for j in range(a1))) / (a1 + 1)
-      print(f"Student {i}:")
-      print(f"GPA is {total_gpa:.2f}")
-      if percentage < 50:
-          print("Fail")
-          fail_count += 1
-      else:
-          print("Pass")
-          pass_count += 1
-      print(f"CGPA is {cgpa:.2f}")
-      total_cgpa += cgpa
-
-  print(f"Number of Pass students in semester {a1 + 1} is {pass_count}")
-  print(f"Number of Fail students in semester {a1 + 1} is {fail_count}")
-  print("Average CGPA:", total_cgpa / n)
+    print(f"| Number of Pass students in semester {a1 + 1} is {pass_count} |")
+    print(f"| Number of Fail students in semester {a1 + 1} is {fail_count} |")
 
 if __name__ == "__main__":
-  main()
+    main()
